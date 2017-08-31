@@ -2,25 +2,49 @@
 
 #define SEAT_SWITCH_L_R_ID                  "SSLR"
 #define SEND_SEAT_K9_SWITCH_ID              "SSK9S"
+
 #define SEND_LH_SEAT_SLIDE_POS_ID           "SLSSP"
 #define SEND_LH_SEAT_RECLINER_POS_ID        "SLSRP"
 #define SEND_LH_SEAT_LEGREST_POS_ID         "SLSLP"
 #define SEND_LH_SEAT_FOOTREST_POS_ID        "SLSFP"
-
 #define SEND_RH_SEAT_SLIDE_POS_ID           "SRSSP"
 #define SEND_RH_SEAT_RECLINER_POS_ID        "SRSRP"
 #define SEND_RH_SEAT_LEGREST_POS_ID         "SRSLP"
 #define SEND_RH_SEAT_FOOTREST_POS_ID        "SRSFP"
 
+#define SEND_MEM_1_SEAT_POS_ID              "SM1SP"
+#define SEND_MEM_2_SEAT_POS_ID              "SM2SP"
+#define SEND_COMPLEX_ID                     "SC"
+#define SEND_REQUEST_ITEM_ID                "SRI"
+
 #define RECV_LH_SEAT_SLIDE_POS_ID           "RLSSP"
 #define RECV_LH_SEAT_RECLINER_POS_ID        "RLSRP"
 #define RECV_LH_SEAT_LEGREST_POS_ID         "RLSLP"
 #define RECV_LH_SEAT_FOOTREST_POS_ID        "RLSFP"
-
 #define RECV_RH_SEAT_SLIDE_POS_ID           "RRSSP"
 #define RECV_RH_SEAT_RECLINER_POS_ID        "RRSRP"
 #define RECV_RH_SEAT_LEGREST_POS_ID         "RRSLP"
 #define RECV_RH_SEAT_FOOTREST_POS_ID        "RRSFP"
+
+#define RECV_LH_MEM_1_RECLINER_POS_ID       "RLM1RP"
+#define RECV_LH_MEM_1_SLIDE_POS_ID          "RLM1SP"
+#define RECV_LH_MEM_1_LEGREST_POS_ID        "RLM1LP"
+#define RECV_LH_MEM_1_FOOTREST_POS_ID       "RLM1FP"
+#define RECV_LH_MEM_2_RECLINER_POS_ID       "RLM2RP"
+#define RECV_LH_MEM_2_SLIDE_POS_ID          "RLM2SP"
+#define RECV_LH_MEM_2_LEGREST_POS_ID        "RLM2LP"
+#define RECV_LH_MEM_2_FOOTREST_POS_ID       "RLM2FP"
+#define RECV_RH_MEM_1_RECLINER_POS_ID       "RRM1RP"
+#define RECV_RH_MEM_1_SLIDE_POS_ID          "RRM1SP"
+#define RECV_RH_MEM_1_LEGREST_POS_ID        "RRM1LP"
+#define RECV_RH_MEM_1_FOOTREST_POS_ID       "RRM1FP"
+#define RECV_RH_MEM_2_RECLINER_POS_ID       "RRM2RP"
+#define RECV_RH_MEM_2_SLIDE_POS_ID          "RRM2SP"
+#define RECV_RH_MEM_2_LEGREST_POS_ID        "RRM2LP"
+#define RECV_RH_MEM_2_FOOTREST_POS_ID       "RRM2FP"
+
+#define RECV_LH_HEATER_VALUE_ID             "RLHV"
+#define RECV_RH_HEATER_VALUE_ID             "RRHV"
 
 int blueTx=3;   //Tx (보내는핀 설정)
 int blueRx=4;   //Rx (받는핀 설정)
@@ -37,12 +61,10 @@ void InitBluetooth()
 
 void LoopBluetooth()
 {
-  unsigned long current_millis = millis();
-  if (current_millis - bluetoothPreviousMillis >= bluetoothInterval) {
-    bluetoothPreviousMillis = current_millis;
-
-  
-  }
+//  unsigned long current_millis = millis();
+//  if (current_millis - bluetoothPreviousMillis >= bluetoothInterval) {
+//    bluetoothPreviousMillis = current_millis;
+//  }
 
   Recv();
 }
@@ -71,7 +93,49 @@ void Recv()
       char* data = &receiveStr[strlen(SEND_SEAT_K9_SWITCH_ID)];
       Serial.print("Seat K9 switch : ");
       Serial.println(data);
-      SendCanbus(SEND_K9_SWITCH_ID, atoi(data));
+      SendCanbus(SEND_K9_SWITCH_IDX, atoi(data));
+    } else if (strncmp(receiveStr, SEND_MEM_1_SEAT_POS_ID, strlen(SEND_MEM_1_SEAT_POS_ID)) == 0) {
+      char* data = &receiveStr[strlen(SEND_MEM_1_SEAT_POS_ID)];
+      Serial.print("Memory 1 : ");
+      Serial.println(data);
+      ResetCanbusData();
+      char *ptr;
+      ptr = strtok(data, ",");
+      while (ptr != NULL) {
+        SetCanbus2Btye(atoi(ptr));
+        ptr = strtok(NULL, ",");
+      }
+      SendCanbus(SEND_MEM_1_POSITION_IDX);
+    } else if (strncmp(receiveStr, SEND_MEM_2_SEAT_POS_ID, strlen(SEND_MEM_2_SEAT_POS_ID)) == 0) {
+      char* data = &receiveStr[strlen(SEND_MEM_2_SEAT_POS_ID)];
+      Serial.print("Memory 2 : ");
+      Serial.println(data);
+      ResetCanbusData();
+      char *ptr;
+      ptr = strtok(data, ",");
+      while (ptr != NULL) {
+        SetCanbus2Btye(atoi(ptr));
+        ptr = strtok(NULL, ",");
+      }
+      SendCanbus(SEND_MEM_2_POSITION_IDX);
+    } else if (strncmp(receiveStr, SEND_COMPLEX_ID, strlen(SEND_COMPLEX_ID)) == 0) {
+      char* data = &receiveStr[strlen(SEND_COMPLEX_ID)];
+      Serial.print("Complex : ");
+      Serial.println(data);
+      ResetCanbusData();
+      char *ptr;
+      ptr = strtok(data, ",");
+      SetCanbus1Btye(atoi(ptr));
+      ptr = strtok(NULL, ",");
+      if (ptr != NULL)
+        SetCanbus2Btye(atoi(ptr));
+      SendCanbus(SEND_COMPLEX_IDX);
+    } else if (strncmp(receiveStr, SEND_REQUEST_ITEM_ID, strlen(SEND_REQUEST_ITEM_ID)) == 0) {
+      char* data = &receiveStr[strlen(SEND_REQUEST_ITEM_ID)];
+      Serial.print("Request Item : ");
+      Serial.println(data);
+      SetCanbus1Btye(atoi(data));
+      SendCanbus(SEND_REQUEST_ITEM_IDX);
     }
     memset(receiveStr, 0, 20);
   }
