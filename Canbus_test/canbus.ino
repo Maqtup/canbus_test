@@ -25,13 +25,17 @@ enum K9_KEY {
 
 uint32_t deviceType = LH;
 char receiveCB_Str[25] = {0,};
-unsigned char stmp[8] = {0,};
+uint8_t stmp[8] = {0,};
 uint8_t stmpIndex = 0;
 
-int16_t reclinerPos = 0xFFFF;
-int16_t slidePos = 0xFFFF;
-int16_t legrestPos = 0xFFFF;
-int16_t footrestPos = 0xFFFF;
+int16_t reclinerLPos = 0xFFFF;
+int16_t slideLPos = 0xFFFF;
+int16_t legrestLPos = 0xFFFF;
+int16_t footrestLPos = 0xFFFF;
+int16_t reclinerRPos = 0xFFFF;
+int16_t slideRPos = 0xFFFF;
+int16_t legrestRPos = 0xFFFF;
+int16_t footrestRPos = 0xFFFF;
 
 int16_t reclinerMem1Pos = 0xFFFF;
 int16_t slideMem1Pos = 0xFFFF;
@@ -69,8 +73,8 @@ void LoopCanbus()
 //    delay(5);
 //  }
 //  if (receiveCB_Str[0] != 0) {
-//    if (strncmp(receiveCB_Str, "DC+", strlen("DC+")) == 0) {
-//      char* data = &receiveCB_Str[strlen("DC+")];
+//    if (strncmp(receiveCB_Str, "C+", strlen("C+")) == 0) {
+//      char* data = &receiveCB_Str[strlen("C+")];
 ////    Serial.print("Change Device : ");
 ////    Serial.println(data);
 //      if (strncmp(data, "L", strlen("L")) == 0) {
@@ -103,12 +107,6 @@ void RecvCanBus()
 
       unsigned int canId = CAN.getCanId();
 
-      Serial.println("-----------------------------");
-      Serial.print("Get data from ID: ");
-      Serial.println(canId, HEX);
-      Serial.print("data len : ");
-      Serial.println(len);
-
       if (len >= 8) {
         int16_t rc_pos = 0;
         int16_t sl_pos = 0;
@@ -129,87 +127,118 @@ void RecvCanBus()
           fr_pos = buf[7];
           fr_pos = (fr_pos << 8) + buf[6];
         }
-        
-        Serial.print("Recliner pos recv data : ");
-        Serial.println(rc_pos);//0~286
-        Serial.print("Slide pos recv data : ");
-        Serial.println(sl_pos);//0~128
-        Serial.print("Legrest pos recv data : ");
-        Serial.println(lr_pos);//0~760 0~732
-        Serial.print("Footrest pos recv data : ");
-        Serial.println(fr_pos);//0~376 0~340
-
         if (canId == RECV_POSITION_IDX + LH && deviceType == LH) {
+//          Serial.println("-----------------------------");
+//          Serial.print("Get data from ID: ");
+//          Serial.println(canId, HEX);
+//          Serial.print("data len : ");
+//          Serial.println(len);
           // 왼쪽 시트 움직임 위치 받기
-          if (reclinerPos != rc_pos) {
+          if (reclinerLPos != rc_pos) {
             Send(RECV_LH_SEAT_RECLINER_POS_ID, rc_pos);
-            reclinerPos = rc_pos;
+            reclinerLPos = rc_pos;
+//            Serial.print("Recliner pos recv data : ");
+//            Serial.println(rc_pos);//0~286
           }
-          if (slidePos != sl_pos) {
+          if (slideLPos != sl_pos) {
             Send(RECV_LH_SEAT_SLIDE_POS_ID, sl_pos);
-            slidePos = sl_pos;
+            slideLPos = sl_pos;
+//            Serial.print("Slide pos recv data : ");
+//            Serial.println(sl_pos);//0~128
           }
-          if (legrestPos != lr_pos) {
+          if (legrestLPos != lr_pos) {
             Send(RECV_LH_SEAT_LEGREST_POS_ID, lr_pos);
-            legrestPos = lr_pos;
+            legrestLPos = lr_pos;
+//            Serial.print("Legrest pos recv data : ");
+//            Serial.println(lr_pos);//0~760 0~732
           }
-          if (footrestPos != fr_pos) {
+          if (footrestLPos != fr_pos) {
             Send(RECV_LH_SEAT_FOOTREST_POS_ID, fr_pos);
-            footrestPos = fr_pos;
+            footrestLPos = fr_pos;
+//            Serial.print("Footrest pos recv data : ");
+//            Serial.println(fr_pos);//0~376 0~340
           }
         } else if (canId == RECV_POSITION_IDX + RH && deviceType == RH) {
           // 오른쪽 시트 움직임 위치 받기
-          if (reclinerPos != rc_pos) {
+          if (reclinerRPos != rc_pos) {
             Send(RECV_RH_SEAT_RECLINER_POS_ID, rc_pos);
-            reclinerPos = rc_pos;
+            reclinerRPos = rc_pos;
+//            Serial.print("Recliner pos recv data : ");
+//            Serial.println(rc_pos);//0~286
           }
-          if (slidePos != sl_pos) {
+          if (slideRPos != sl_pos) {
             Send(RECV_RH_SEAT_SLIDE_POS_ID, sl_pos);
-            slidePos = sl_pos;
+            slideRPos = sl_pos;
+//            Serial.print("Slide pos recv data : ");
+//            Serial.println(sl_pos);//0~128
           }
-          if (legrestPos != lr_pos) {
+          if (legrestRPos != lr_pos) {
             Send(RECV_RH_SEAT_LEGREST_POS_ID, lr_pos);
-            legrestPos = lr_pos;
+            legrestRPos = lr_pos;
+//            Serial.print("Legrest pos recv data : ");
+//            Serial.println(lr_pos);//0~760 0~732
           }
-          if (footrestPos != fr_pos) {
+          if (footrestRPos != fr_pos) {
             Send(RECV_RH_SEAT_FOOTREST_POS_ID, fr_pos);
-            footrestPos = fr_pos;
+            footrestRPos = fr_pos;
+//            Serial.print("Footrest pos recv data : ");
+//            Serial.println(fr_pos);//0~376 0~340
           }
         } else if (canId == RECV_MEM_1_POSITION_IDX + LH && deviceType == LH) {
           // 왼쪽 시트 메모리 1 위치값 받기
+//          Serial.print("Get data from ID: ");
+//          Serial.println(canId, HEX);
           if (reclinerMem1Pos != rc_pos) {
             Send(RECV_LH_MEM_1_RECLINER_POS_ID, rc_pos);
             reclinerMem1Pos = rc_pos;
+//            Serial.print("Mem1 pos recv data : ");
+//            Serial.println(rc_pos);
           }
           if (slideMem1Pos != sl_pos) {
             Send(RECV_LH_MEM_1_SLIDE_POS_ID, sl_pos);
             slideMem1Pos = sl_pos;
+//            Serial.print("Mem1 pos recv data : ");
+//            Serial.println(sl_pos);
           }
           if (legrestMem1Pos != lr_pos) {
             Send(RECV_LH_MEM_1_LEGREST_POS_ID, lr_pos);
             legrestMem1Pos = lr_pos;
+//            Serial.print("Mem1 pos recv data : ");
+//            Serial.println(lr_pos);
           }
           if (footrestMem1Pos != fr_pos) {
             Send(RECV_LH_MEM_1_FOOTREST_POS_ID, fr_pos);
             footrestMem1Pos = fr_pos;
+//            Serial.print("Mem1 pos recv data : ");
+//            Serial.println(fr_pos);
           }
         } else if (canId == RECV_MEM_1_POSITION_IDX + RH && deviceType == RH) {
           // 오른쪽 시트 메모리 1 위치값 받기
+//          Serial.print("Get data from ID: ");
+//          Serial.println(canId, HEX);
           if (reclinerMem1Pos != rc_pos) {
             Send(RECV_RH_MEM_1_RECLINER_POS_ID, rc_pos);
             reclinerMem1Pos = rc_pos;
+//            Serial.print("Mem1 pos recv data : ");
+//            Serial.println(rc_pos);
           }
           if (slideMem1Pos != sl_pos) {
             Send(RECV_RH_MEM_1_SLIDE_POS_ID, sl_pos);
             slideMem1Pos = sl_pos;
+//            Serial.print("Mem1 pos recv data : ");
+//            Serial.println(sl_pos);
           }
           if (legrestMem1Pos != lr_pos) {
             Send(RECV_RH_MEM_1_LEGREST_POS_ID, lr_pos);
             legrestMem1Pos = lr_pos;
+//            Serial.print("Mem1 pos recv data : ");
+//            Serial.println(lr_pos);
           }
           if (footrestMem1Pos != fr_pos) {
             Send(RECV_RH_MEM_1_FOOTREST_POS_ID, fr_pos);
             footrestMem1Pos = fr_pos;
+//            Serial.print("Mem1 pos recv data : ");
+//            Serial.println(fr_pos);
           }
         } else if (canId == RECV_MEM_2_POSITION_IDX + LH && deviceType == LH) {
           // 왼쪽 시트 메모리 2 위치값 받기
@@ -251,10 +280,14 @@ void RecvCanBus()
           // 현재 왼쪽 시트 히터 보정값
           Send(RECV_LH_HEATER_VALUE_ID, sl_pos);
           heaterCorrection = sl_pos;
+//          Serial.print("Heater correction recv data : ");
+//          Serial.println(sl_pos);
         } else if (canId == RECV_HEATER_IDX + RH && deviceType == RH && heaterCorrection != sl_pos) {
           // 현재 오른쪽 시트 히터 보정값
           Send(RECV_RH_HEATER_VALUE_ID, sl_pos);
           heaterCorrection = sl_pos;
+//          Serial.print("Heater correction recv data : ");
+//          Serial.println(sl_pos);
         }
      }
   }
@@ -268,14 +301,14 @@ void ResetCanbusData()
 
 void SetCanbus1Btye(int8_t _v)
 {
-  if (strlen(stmp) > stmpIndex) {
+  if (sizeof(stmp) > stmpIndex+1) {
     stmp[stmpIndex++] = _v;
   }
 }
 
 void SetCanbus2Btye(int16_t _v)
 {
-  if (strlen(stmp) > stmpIndex) {
+  if (sizeof(stmp) > stmpIndex+2) {
     stmp[stmpIndex++] = (_v & 0xFF);
     stmp[stmpIndex++] = (_v >> 8);
   }
@@ -284,7 +317,7 @@ void SetCanbus2Btye(int16_t _v)
 void SendCanbus(uint32_t _id)
 {
   CAN.sendMsgBuf(_id + deviceType, 0, 8, stmp);
-  memset(stmp, 0, 8);
+  ResetCanbusData();
 }
 
 void SendCanbus(uint32_t _id, uint8_t _v)

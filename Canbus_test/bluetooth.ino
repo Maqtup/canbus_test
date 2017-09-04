@@ -134,6 +134,7 @@ void Recv()
       char* data = &receiveStr[strlen(SEND_REQUEST_ITEM_ID)];
       Serial.print("Request Item : ");
       Serial.println(data);
+      ResetCanbusData();
       SetCanbus1Btye(atoi(data));
       SendCanbus(SEND_REQUEST_ITEM_IDX);
     }
