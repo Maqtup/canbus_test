@@ -28,6 +28,23 @@ char receiveCB_Str[25] = {0,};
 unsigned char stmp[8] = {0,};
 uint8_t stmpIndex = 0;
 
+int16_t reclinerPos = 0xFFFF;
+int16_t slidePos = 0xFFFF;
+int16_t legrestPos = 0xFFFF;
+int16_t footrestPos = 0xFFFF;
+
+int16_t reclinerMem1Pos = 0xFFFF;
+int16_t slideMem1Pos = 0xFFFF;
+int16_t legrestMem1Pos = 0xFFFF;
+int16_t footrestMem1Pos = 0xFFFF;
+
+int16_t reclinerMem2Pos = 0xFFFF;
+int16_t slideMem2Pos = 0xFFFF;
+int16_t legrestMem2Pos = 0xFFFF;
+int16_t footrestMem2Pos = 0xFFFF;
+
+int16_t heaterCorrection = 0xFFFF;
+
 // the cs pin of the version after v1.1 is default to D9
 // v0.9b and v1.0 is default D10
 const int SPI_CS_PIN = 9;
@@ -46,32 +63,32 @@ void InitCanbus()
 
 void LoopCanbus()
 {
-  while (Serial.available()) {
-    char data = Serial.read();
-    receiveCB_Str[strlen(receiveCB_Str)] = data;
-    delay(5);
-  }
-  if (receiveCB_Str[0] != 0) {
-    if (strncmp(receiveCB_Str, "DC+", strlen("DC+")) == 0) {
-      char* data = &receiveCB_Str[strlen("DC+")];
-//    Serial.print("Change Device : ");
-//    Serial.println(data);
-      if (strncmp(data, "L", strlen("L")) == 0) {
-        ChangeDevice(LH);
-      } else if (strncmp(data, "R", strlen("R")) == 0) {
-        ChangeDevice(RH);
-      } else if (strncmp(data, "H", strlen("H")) == 0) {
-        ChangeDevice(HEADER);
-      }
-    } else if (strncmp(receiveCB_Str, "K9+", strlen("K9+")) == 0) {
-      char* data = &receiveCB_Str[strlen("K9+")];
-      SendCanbus(SEND_K9_SWITCH_IDX, atoi(data));
-    } else if (strncmp(receiveCB_Str, "AT", strlen("AT")) == 0) {
-      mySerial.write(receiveCB_Str);
-    }
-  
-    memset(receiveCB_Str, 0, 25);
-  }
+//  while (Serial.available()) {
+//    char data = Serial.read();
+//    receiveCB_Str[strlen(receiveCB_Str)] = data;
+//    delay(5);
+//  }
+//  if (receiveCB_Str[0] != 0) {
+//    if (strncmp(receiveCB_Str, "DC+", strlen("DC+")) == 0) {
+//      char* data = &receiveCB_Str[strlen("DC+")];
+////    Serial.print("Change Device : ");
+////    Serial.println(data);
+//      if (strncmp(data, "L", strlen("L")) == 0) {
+//        ChangeDevice(LH);
+//      } else if (strncmp(data, "R", strlen("R")) == 0) {
+//        ChangeDevice(RH);
+//      } else if (strncmp(data, "H", strlen("H")) == 0) {
+//        ChangeDevice(HEADER);
+//      }
+//    } else if (strncmp(receiveCB_Str, "K9+", strlen("K9+")) == 0) {
+//      char* data = &receiveCB_Str[strlen("K9+")];
+//      SendCanbus(SEND_K9_SWITCH_IDX, atoi(data));
+//    } else if (strncmp(receiveCB_Str, "AT", strlen("AT")) == 0) {
+//      mySerial.write(receiveCB_Str);
+//    }
+//  
+//    memset(receiveCB_Str, 0, 25);
+//  }
   RecvCanBus();
 }
 
@@ -124,42 +141,120 @@ void RecvCanBus()
 
         if (canId == RECV_POSITION_IDX + LH && deviceType == LH) {
           // 왼쪽 시트 움직임 위치 받기
-          Send(RECV_LH_SEAT_RECLINER_POS_ID, rc_pos);
-          Send(RECV_LH_SEAT_SLIDE_POS_ID, sl_pos);
-          Send(RECV_LH_SEAT_LEGREST_POS_ID, lr_pos);
-          Send(RECV_LH_SEAT_FOOTREST_POS_ID, fr_pos);
+          if (reclinerPos != rc_pos) {
+            Send(RECV_LH_SEAT_RECLINER_POS_ID, rc_pos);
+            reclinerPos = rc_pos;
+          }
+          if (slidePos != sl_pos) {
+            Send(RECV_LH_SEAT_SLIDE_POS_ID, sl_pos);
+            slidePos = sl_pos;
+          }
+          if (legrestPos != lr_pos) {
+            Send(RECV_LH_SEAT_LEGREST_POS_ID, lr_pos);
+            legrestPos = lr_pos;
+          }
+          if (footrestPos != fr_pos) {
+            Send(RECV_LH_SEAT_FOOTREST_POS_ID, fr_pos);
+            footrestPos = fr_pos;
+          }
         } else if (canId == RECV_POSITION_IDX + RH && deviceType == RH) {
           // 오른쪽 시트 움직임 위치 받기
-          Send(RECV_RH_SEAT_RECLINER_POS_ID, rc_pos);
-          Send(RECV_RH_SEAT_SLIDE_POS_ID, sl_pos);
-          Send(RECV_RH_SEAT_LEGREST_POS_ID, lr_pos);
-          Send(RECV_RH_SEAT_FOOTREST_POS_ID, fr_pos);
+          if (reclinerPos != rc_pos) {
+            Send(RECV_RH_SEAT_RECLINER_POS_ID, rc_pos);
+            reclinerPos = rc_pos;
+          }
+          if (slidePos != sl_pos) {
+            Send(RECV_RH_SEAT_SLIDE_POS_ID, sl_pos);
+            slidePos = sl_pos;
+          }
+          if (legrestPos != lr_pos) {
+            Send(RECV_RH_SEAT_LEGREST_POS_ID, lr_pos);
+            legrestPos = lr_pos;
+          }
+          if (footrestPos != fr_pos) {
+            Send(RECV_RH_SEAT_FOOTREST_POS_ID, fr_pos);
+            footrestPos = fr_pos;
+          }
         } else if (canId == RECV_MEM_1_POSITION_IDX + LH && deviceType == LH) {
-          // 왼쪽 시트 메모리 위치값 받기
-          Send(RECV_LH_MEM_1_RECLINER_POS_ID, rc_pos);
-          Send(RECV_LH_MEM_1_SLIDE_POS_ID, sl_pos);
-          Send(RECV_LH_MEM_1_LEGREST_POS_ID, lr_pos);
-          Send(RECV_LH_MEM_1_FOOTREST_POS_ID, fr_pos);
+          // 왼쪽 시트 메모리 1 위치값 받기
+          if (reclinerMem1Pos != rc_pos) {
+            Send(RECV_LH_MEM_1_RECLINER_POS_ID, rc_pos);
+            reclinerMem1Pos = rc_pos;
+          }
+          if (slideMem1Pos != sl_pos) {
+            Send(RECV_LH_MEM_1_SLIDE_POS_ID, sl_pos);
+            slideMem1Pos = sl_pos;
+          }
+          if (legrestMem1Pos != lr_pos) {
+            Send(RECV_LH_MEM_1_LEGREST_POS_ID, lr_pos);
+            legrestMem1Pos = lr_pos;
+          }
+          if (footrestMem1Pos != fr_pos) {
+            Send(RECV_LH_MEM_1_FOOTREST_POS_ID, fr_pos);
+            footrestMem1Pos = fr_pos;
+          }
         } else if (canId == RECV_MEM_1_POSITION_IDX + RH && deviceType == RH) {
-          // 오른쪽 시트 메모리 위치값 받기
-          Send(RECV_RH_MEM_1_RECLINER_POS_ID, rc_pos);
-          Send(RECV_RH_MEM_1_SLIDE_POS_ID, sl_pos);
-          Send(RECV_RH_MEM_1_LEGREST_POS_ID, lr_pos);
-          Send(RECV_RH_MEM_1_FOOTREST_POS_ID, fr_pos);
+          // 오른쪽 시트 메모리 1 위치값 받기
+          if (reclinerMem1Pos != rc_pos) {
+            Send(RECV_RH_MEM_1_RECLINER_POS_ID, rc_pos);
+            reclinerMem1Pos = rc_pos;
+          }
+          if (slideMem1Pos != sl_pos) {
+            Send(RECV_RH_MEM_1_SLIDE_POS_ID, sl_pos);
+            slideMem1Pos = sl_pos;
+          }
+          if (legrestMem1Pos != lr_pos) {
+            Send(RECV_RH_MEM_1_LEGREST_POS_ID, lr_pos);
+            legrestMem1Pos = lr_pos;
+          }
+          if (footrestMem1Pos != fr_pos) {
+            Send(RECV_RH_MEM_1_FOOTREST_POS_ID, fr_pos);
+            footrestMem1Pos = fr_pos;
+          }
         } else if (canId == RECV_MEM_2_POSITION_IDX + LH && deviceType == LH) {
-          Send(RECV_LH_MEM_2_RECLINER_POS_ID, rc_pos);
-          Send(RECV_LH_MEM_2_SLIDE_POS_ID, sl_pos);
-          Send(RECV_LH_MEM_2_LEGREST_POS_ID, lr_pos);
-          Send(RECV_LH_MEM_2_FOOTREST_POS_ID, fr_pos);
+          // 왼쪽 시트 메모리 2 위치값 받기
+          if (reclinerMem2Pos != rc_pos) {
+            Send(RECV_LH_MEM_2_RECLINER_POS_ID, rc_pos);
+            reclinerMem2Pos = rc_pos;
+          }
+          if (slideMem2Pos != sl_pos) {
+            Send(RECV_LH_MEM_2_SLIDE_POS_ID, sl_pos);
+            slideMem2Pos = sl_pos;
+          }
+          if (legrestMem2Pos != lr_pos) {
+            Send(RECV_LH_MEM_2_LEGREST_POS_ID, lr_pos);
+            legrestMem2Pos = lr_pos;
+          }
+          if (footrestMem2Pos != fr_pos) {
+            Send(RECV_LH_MEM_2_FOOTREST_POS_ID, fr_pos);
+            footrestMem2Pos = fr_pos;
+          }
         } else if (canId == RECV_MEM_2_POSITION_IDX + RH && deviceType == RH) {
-          Send(RECV_RH_MEM_2_RECLINER_POS_ID, rc_pos);
-          Send(RECV_RH_MEM_2_SLIDE_POS_ID, sl_pos);
-          Send(RECV_RH_MEM_2_LEGREST_POS_ID, lr_pos);
-          Send(RECV_RH_MEM_2_FOOTREST_POS_ID, fr_pos);
-        } else if (canId == RECV_HEATER_IDX + LH && deviceType == LH) {
+          // 오른쪽 시트 메모리 2 위치값 받기
+          if (reclinerMem2Pos != rc_pos) {
+            Send(RECV_RH_MEM_2_RECLINER_POS_ID, rc_pos);
+            reclinerMem2Pos = rc_pos;
+          }
+          if (slideMem2Pos != sl_pos) {
+            Send(RECV_RH_MEM_2_SLIDE_POS_ID, sl_pos);
+            slideMem2Pos = sl_pos;
+          }
+          if (legrestMem2Pos != lr_pos) {
+            Send(RECV_RH_MEM_2_LEGREST_POS_ID, lr_pos);
+            legrestMem2Pos = lr_pos;
+          }
+          if (footrestMem2Pos != fr_pos) {
+            Send(RECV_RH_MEM_2_FOOTREST_POS_ID, fr_pos);
+            footrestMem2Pos = fr_pos;
+          }
+        } else if (canId == RECV_HEATER_IDX + LH && deviceType == LH && heaterCorrection != sl_pos) {
+          // 현재 왼쪽 시트 히터 보정값
           Send(RECV_LH_HEATER_VALUE_ID, sl_pos);
-        } else if (canId == RECV_HEATER_IDX + RH && deviceType == RH) {
+          heaterCorrection = sl_pos;
+        } else if (canId == RECV_HEATER_IDX + RH && deviceType == RH && heaterCorrection != sl_pos) {
+          // 현재 오른쪽 시트 히터 보정값
           Send(RECV_RH_HEATER_VALUE_ID, sl_pos);
+          heaterCorrection = sl_pos;
         }
      }
   }
@@ -171,17 +266,17 @@ void ResetCanbusData()
   memset(stmp, 0, 8);
 }
 
-void SetCanbus1Btye(uint8_t _v)
+void SetCanbus1Btye(int8_t _v)
 {
   if (strlen(stmp) > stmpIndex) {
     stmp[stmpIndex++] = _v;
   }
 }
 
-void SetCanbus2Btye(uint16_t _v)
+void SetCanbus2Btye(int16_t _v)
 {
   if (strlen(stmp) > stmpIndex) {
-    stmp[stmpIndex++] = (_v & 0xFF) << 8;
+    stmp[stmpIndex++] = (_v & 0xFF);
     stmp[stmpIndex++] = (_v >> 8);
   }
 }
