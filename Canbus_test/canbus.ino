@@ -113,27 +113,15 @@ void RecvCanBus()
         int16_t fr_pos = 0;
         int16_t comping_mode = 0;
         
-        if (canId == RECV_STATUS_IDX + LH || canId == RECV_STATUS_IDX + RH) {
-          rc_pos = buf[0];
-          if (rc_pos == 0) {
-            sl_pos = buf[2];
-            sl_pos = (sl_pos << 8) + buf[1];
-          } else if (rc_pos == 3) {
-            sl_pos = buf[1];
-            lr_pos = buf[2];
-            fr_pos = buf[3];
-            comping_mode = buf[4];
-          }
-        } else {
-          rc_pos = buf[1];
-          rc_pos = (rc_pos << 8) + buf[0];
-          sl_pos = buf[3];
-          sl_pos = (sl_pos << 8) + buf[2];
-          lr_pos = buf[5];
-          lr_pos = (lr_pos << 8) + buf[4];
-          fr_pos = buf[7];
-          fr_pos = (fr_pos << 8) + buf[6];
-        }
+        rc_pos = buf[1];
+        rc_pos = (rc_pos << 8) + buf[0];
+        sl_pos = buf[3];
+        sl_pos = (sl_pos << 8) + buf[2];
+        lr_pos = buf[5];
+        lr_pos = (lr_pos << 8) + buf[4];
+        fr_pos = buf[7];
+        fr_pos = (fr_pos << 8) + buf[6];
+        
         if (canId == RECV_POSITION_IDX + LH && deviceType == LH) {
 //          Serial.println("-----------------------------");
 //          Serial.print("Get data from ID: ");
@@ -235,56 +223,76 @@ void RecvCanBus()
           Send(RECV_RH_MEM_2_SLIDE_POS_ID, sl_pos);
           Send(RECV_RH_MEM_2_LEGREST_POS_ID, lr_pos);
           Send(RECV_RH_MEM_2_FOOTREST_POS_ID, fr_pos);
-        } else if (canId == RECV_STATUS_IDX + LH && deviceType == LH) {
-          // 현재 왼쪽 시트 히터 보정값
-          if (rc_pos == 0 && heaterCorrectionL != rc_pos) {
-            Send(RECV_LH_HEATER_VALUE_ID, sl_pos);
-            heaterCorrectionL = rc_pos;
-          } else if (rc_pos == 3) {
-            if (heaterLevelL != sl_pos) {
-              Send(RECV_LH_HEATER_LEVEL_ID, sl_pos);
-              heaterLevelL = sl_pos;
-            }
-            if (fanLevelL != lr_pos) {
-              Send(RECV_LH_FAN_LEVEL_ID, lr_pos);
-              fanLevelL = lr_pos;
-            }
-            if (massageLevelL != fr_pos) {
-              Send(RECV_LH_MASSAGE_LEVEL_ID, fr_pos);
-              massageLevelL = fr_pos;
-            }
-            if (compingModeL != fr_pos) {
-              Send(RECV_LH_CAMPING_MODE_ID, comping_mode);
-              compingModeL = fr_pos;
-            }
+        }
+     } else {
+        if (canId == RECV_STATUS_IDX + LH || canId == RECV_STATUS_IDX + RH) {
+          int16_t header = 0;
+          int16_t heater_lv = 0;
+          int16_t fan_lv = 0;
+          int16_t massage_lv = 0;
+          int16_t comping_mode = 0;
+          header = buf[0];
+          if (header == 0) {
+            heater_lv = buf[2];
+            heater_lv = (heater_lv << 8) + buf[1];
+          } else if (header == 3) {
+            heater_lv = buf[1];
+            fan_lv = buf[2];
+            massage_lv = buf[3];
+            comping_mode = buf[4];
           }
+
+          if (canId == RECV_STATUS_IDX + LH && deviceType == LH) {
+            // 현재 왼쪽 시트 히터 보정값
+            if (header == 0 && heaterCorrectionL != heater_lv) {
+              Send(RECV_LH_HEATER_VALUE_ID, heater_lv);
+              heaterCorrectionL = heater_lv;
+            } else if (header == 3) {
+              if (heaterLevelL != heater_lv) {
+                Send(RECV_LH_HEATER_LEVEL_ID, heater_lv);
+                heaterLevelL = heater_lv;
+              }
+              if (fanLevelL != fan_lv) {
+                Send(RECV_LH_FAN_LEVEL_ID, fan_lv);
+                fanLevelL = fan_lv;
+              }
+              if (massageLevelL != massage_lv) {
+                Send(RECV_LH_MASSAGE_LEVEL_ID, massage_lv);
+                massageLevelL = massage_lv;
+              }
+              if (compingModeL != massage_lv) {
+                Send(RECV_LH_CAMPING_MODE_ID, comping_mode);
+                compingModeL = massage_lv;
+              }
+            }
 //          Serial.print("Heater correction recv data : ");
-//          Serial.println(sl_pos);
-        } else if (canId == RECV_STATUS_IDX + RH && deviceType == RH) {
-          // 현재 오른쪽 시트 히터 보정값
-          if (rc_pos == 0 && heaterCorrectionR != rc_pos) {
-            Send(RECV_RH_HEATER_VALUE_ID, sl_pos);
-            heaterCorrectionR = rc_pos;
-          } else if (rc_pos == 3) {
-            if (heaterLevelR != sl_pos) {
-              Send(RECV_RH_HEATER_LEVEL_ID, sl_pos);
-              heaterLevelR = sl_pos;
+//          Serial.println(heater_lv);
+          } else if (canId == RECV_STATUS_IDX + RH && deviceType == RH) {
+            // 현재 오른쪽 시트 히터 보정값
+            if (header == 0 && heaterCorrectionR != heater_lv) {
+              Send(RECV_RH_HEATER_VALUE_ID, heater_lv);
+              heaterCorrectionR = heater_lv;
+            } else if (header == 3) {
+              if (heaterLevelR != heater_lv) {
+                Send(RECV_RH_HEATER_LEVEL_ID, heater_lv);
+                heaterLevelR = heater_lv;
+              }
+              if (fanLevelR != fan_lv) {
+                Send(RECV_RH_FAN_LEVEL_ID, fan_lv);
+                fanLevelR = fan_lv;
+              }
+              if (massageLevelR != massage_lv) {
+                Send(RECV_RH_MASSAGE_LEVEL_ID, massage_lv);
+                massageLevelR = massage_lv;
+              }
+              if (compingModeR != massage_lv) {
+                Send(RECV_RH_CAMPING_MODE_ID, comping_mode);
+                compingModeR = massage_lv;
+              }
             }
-            if (fanLevelR != lr_pos) {
-              Send(RECV_RH_FAN_LEVEL_ID, lr_pos);
-              fanLevelR = lr_pos;
-            }
-            if (massageLevelR != fr_pos) {
-              Send(RECV_RH_MASSAGE_LEVEL_ID, fr_pos);
-              massageLevelR = fr_pos;
-            }
-            if (compingModeR != fr_pos) {
-              Send(RECV_RH_CAMPING_MODE_ID, comping_mode);
-              compingModeR = fr_pos;
-            }
+//          Serial.print("Heater correction recv data : ");
+//          Serial.println(heater_lv);
           }
-//          Serial.print("Heater correction recv data : ");
-//          Serial.println(sl_pos);
         }
      }
   }
