@@ -2,6 +2,7 @@
 
 #define SEAT_SWITCH_L_R_ID                  "SSLR"
 #define SEND_SEAT_K9_SWITCH_ID              "SSK9S"
+#define SEND_SEAT_WORKIN_LUMBAR_SWITCH_ID   "SSWLS"
 
 #define SEND_LH_SEAT_SLIDE_POS_ID           "SLSSP"
 #define SEND_LH_SEAT_RECLINER_POS_ID        "SLSRP"
@@ -45,6 +46,15 @@
 
 #define RECV_LH_HEATER_VALUE_ID             "RLHV"
 #define RECV_RH_HEATER_VALUE_ID             "RRHV"
+
+#define RECV_LH_HEATER_LEVEL_ID             "RLHLV"
+#define RECV_LH_FAN_LEVEL_ID                "RLFLV"
+#define RECV_LH_MASSAGE_LEVEL_ID            "RLMLV"
+#define RECV_LH_CAMPING_MODE_ID             "RLCMD"
+#define RECV_RH_HEATER_LEVEL_ID             "RRHLV"
+#define RECV_RH_FAN_LEVEL_ID                "RRFLV"
+#define RECV_RH_MASSAGE_LEVEL_ID            "RRMLV"
+#define RECV_RH_CAMPING_MODE_ID             "RRCMD"
 
 int blueTx=3;   //Tx (보내는핀 설정)
 int blueRx=4;   //Rx (받는핀 설정)
@@ -94,6 +104,15 @@ void Recv()
       Serial.print("Seat K9 switch : ");
       Serial.println(data);
       SendCanbus(SEND_K9_SWITCH_IDX, atoi(data));
+    } else if (strncmp(receiveStr, SEND_SEAT_WORKIN_LUMBAR_SWITCH_ID, strlen(SEND_SEAT_WORKIN_LUMBAR_SWITCH_ID)) == 0) {
+      char* data = &receiveStr[strlen(SEND_SEAT_WORKIN_LUMBAR_SWITCH_ID)];
+      Serial.print("Seat Workin & Lumbar switch : ");
+      Serial.println(data);
+      ResetCanbusData();
+      SetCanbus1Btye(0);
+      SetCanbus1Btye(0);
+      SetCanbus1Btye(atoi(data));
+      SendCanbus(SEND_K9_SWITCH_IDX);
     } else if (strncmp(receiveStr, SEND_MEM_1_SEAT_POS_ID, strlen(SEND_MEM_1_SEAT_POS_ID)) == 0) {
       char* data = &receiveStr[strlen(SEND_MEM_1_SEAT_POS_ID)];
       Serial.print("Memory 1 : ");

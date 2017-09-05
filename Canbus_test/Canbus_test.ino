@@ -13,7 +13,7 @@
 #define RECV_POSITION_IDX         0x310
 #define RECV_MEM_1_POSITION_IDX   0x311
 #define RECV_MEM_2_POSITION_IDX   0x312
-#define RECV_HEATER_IDX           0x313
+#define RECV_STATUS_IDX           0x313
 
 void setup() {
   Serial.begin(9600);

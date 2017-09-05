@@ -37,17 +37,16 @@ int16_t slideRPos = 0xFFFF;
 int16_t legrestRPos = 0xFFFF;
 int16_t footrestRPos = 0xFFFF;
 
-int16_t reclinerMem1Pos = 0xFFFF;
-int16_t slideMem1Pos = 0xFFFF;
-int16_t legrestMem1Pos = 0xFFFF;
-int16_t footrestMem1Pos = 0xFFFF;
-
-int16_t reclinerMem2Pos = 0xFFFF;
-int16_t slideMem2Pos = 0xFFFF;
-int16_t legrestMem2Pos = 0xFFFF;
-int16_t footrestMem2Pos = 0xFFFF;
-
-int16_t heaterCorrection = 0xFFFF;
+int16_t heaterCorrectionL = 0xFFFF;
+int16_t heaterLevelL = 0xFFFF;
+int16_t fanLevelL = 0xFFFF;
+int16_t massageLevelL = 0xFFFF;
+int8_t compingModeL = 0xFF;
+int16_t heaterCorrectionR = 0xFFFF;
+int16_t heaterLevelR = 0xFFFF;
+int16_t fanLevelR = 0xFFFF;
+int16_t massageLevelR = 0xFFFF;
+int8_t compingModeR = 0xFF;
 
 // the cs pin of the version after v1.1 is default to D9
 // v0.9b and v1.0 is default D10
@@ -112,11 +111,19 @@ void RecvCanBus()
         int16_t sl_pos = 0;
         int16_t lr_pos = 0;
         int16_t fr_pos = 0;
+        int16_t comping_mode = 0;
         
-        if (canId == RECV_HEATER_IDX + LH || canId == RECV_HEATER_IDX + RH) {
+        if (canId == RECV_STATUS_IDX + LH || canId == RECV_STATUS_IDX + RH) {
           rc_pos = buf[0];
-          sl_pos = buf[2];
-          sl_pos = (sl_pos << 8) + buf[1];
+          if (rc_pos == 0) {
+            sl_pos = buf[2];
+            sl_pos = (sl_pos << 8) + buf[1];
+          } else if (rc_pos == 3) {
+            sl_pos = buf[1];
+            lr_pos = buf[2];
+            fr_pos = buf[3];
+            comping_mode = buf[4];
+          }
         } else {
           rc_pos = buf[1];
           rc_pos = (rc_pos << 8) + buf[0];
@@ -188,104 +195,94 @@ void RecvCanBus()
           // 왼쪽 시트 메모리 1 위치값 받기
 //          Serial.print("Get data from ID: ");
 //          Serial.println(canId, HEX);
-          if (reclinerMem1Pos != rc_pos) {
-            Send(RECV_LH_MEM_1_RECLINER_POS_ID, rc_pos);
-            reclinerMem1Pos = rc_pos;
+          Send(RECV_LH_MEM_1_RECLINER_POS_ID, rc_pos);
 //            Serial.print("Mem1 pos recv data : ");
 //            Serial.println(rc_pos);
-          }
-          if (slideMem1Pos != sl_pos) {
-            Send(RECV_LH_MEM_1_SLIDE_POS_ID, sl_pos);
-            slideMem1Pos = sl_pos;
+          Send(RECV_LH_MEM_1_SLIDE_POS_ID, sl_pos);
 //            Serial.print("Mem1 pos recv data : ");
 //            Serial.println(sl_pos);
-          }
-          if (legrestMem1Pos != lr_pos) {
-            Send(RECV_LH_MEM_1_LEGREST_POS_ID, lr_pos);
-            legrestMem1Pos = lr_pos;
+          Send(RECV_LH_MEM_1_LEGREST_POS_ID, lr_pos);
 //            Serial.print("Mem1 pos recv data : ");
 //            Serial.println(lr_pos);
-          }
-          if (footrestMem1Pos != fr_pos) {
-            Send(RECV_LH_MEM_1_FOOTREST_POS_ID, fr_pos);
-            footrestMem1Pos = fr_pos;
+          Send(RECV_LH_MEM_1_FOOTREST_POS_ID, fr_pos);
 //            Serial.print("Mem1 pos recv data : ");
 //            Serial.println(fr_pos);
-          }
         } else if (canId == RECV_MEM_1_POSITION_IDX + RH && deviceType == RH) {
           // 오른쪽 시트 메모리 1 위치값 받기
 //          Serial.print("Get data from ID: ");
 //          Serial.println(canId, HEX);
-          if (reclinerMem1Pos != rc_pos) {
-            Send(RECV_RH_MEM_1_RECLINER_POS_ID, rc_pos);
-            reclinerMem1Pos = rc_pos;
+          Send(RECV_RH_MEM_1_RECLINER_POS_ID, rc_pos);
 //            Serial.print("Mem1 pos recv data : ");
 //            Serial.println(rc_pos);
-          }
-          if (slideMem1Pos != sl_pos) {
-            Send(RECV_RH_MEM_1_SLIDE_POS_ID, sl_pos);
-            slideMem1Pos = sl_pos;
+          Send(RECV_RH_MEM_1_SLIDE_POS_ID, sl_pos);
 //            Serial.print("Mem1 pos recv data : ");
 //            Serial.println(sl_pos);
-          }
-          if (legrestMem1Pos != lr_pos) {
-            Send(RECV_RH_MEM_1_LEGREST_POS_ID, lr_pos);
-            legrestMem1Pos = lr_pos;
+          Send(RECV_RH_MEM_1_LEGREST_POS_ID, lr_pos);
 //            Serial.print("Mem1 pos recv data : ");
 //            Serial.println(lr_pos);
-          }
-          if (footrestMem1Pos != fr_pos) {
-            Send(RECV_RH_MEM_1_FOOTREST_POS_ID, fr_pos);
-            footrestMem1Pos = fr_pos;
+          Send(RECV_RH_MEM_1_FOOTREST_POS_ID, fr_pos);
 //            Serial.print("Mem1 pos recv data : ");
 //            Serial.println(fr_pos);
-          }
         } else if (canId == RECV_MEM_2_POSITION_IDX + LH && deviceType == LH) {
           // 왼쪽 시트 메모리 2 위치값 받기
-          if (reclinerMem2Pos != rc_pos) {
-            Send(RECV_LH_MEM_2_RECLINER_POS_ID, rc_pos);
-            reclinerMem2Pos = rc_pos;
-          }
-          if (slideMem2Pos != sl_pos) {
-            Send(RECV_LH_MEM_2_SLIDE_POS_ID, sl_pos);
-            slideMem2Pos = sl_pos;
-          }
-          if (legrestMem2Pos != lr_pos) {
-            Send(RECV_LH_MEM_2_LEGREST_POS_ID, lr_pos);
-            legrestMem2Pos = lr_pos;
-          }
-          if (footrestMem2Pos != fr_pos) {
-            Send(RECV_LH_MEM_2_FOOTREST_POS_ID, fr_pos);
-            footrestMem2Pos = fr_pos;
-          }
+          Send(RECV_LH_MEM_2_RECLINER_POS_ID, rc_pos);
+          Send(RECV_LH_MEM_2_SLIDE_POS_ID, sl_pos);
+          Send(RECV_LH_MEM_2_LEGREST_POS_ID, lr_pos);
+          Send(RECV_LH_MEM_2_FOOTREST_POS_ID, fr_pos);
         } else if (canId == RECV_MEM_2_POSITION_IDX + RH && deviceType == RH) {
           // 오른쪽 시트 메모리 2 위치값 받기
-          if (reclinerMem2Pos != rc_pos) {
-            Send(RECV_RH_MEM_2_RECLINER_POS_ID, rc_pos);
-            reclinerMem2Pos = rc_pos;
-          }
-          if (slideMem2Pos != sl_pos) {
-            Send(RECV_RH_MEM_2_SLIDE_POS_ID, sl_pos);
-            slideMem2Pos = sl_pos;
-          }
-          if (legrestMem2Pos != lr_pos) {
-            Send(RECV_RH_MEM_2_LEGREST_POS_ID, lr_pos);
-            legrestMem2Pos = lr_pos;
-          }
-          if (footrestMem2Pos != fr_pos) {
-            Send(RECV_RH_MEM_2_FOOTREST_POS_ID, fr_pos);
-            footrestMem2Pos = fr_pos;
-          }
-        } else if (canId == RECV_HEATER_IDX + LH && deviceType == LH && heaterCorrection != sl_pos) {
+          Send(RECV_RH_MEM_2_RECLINER_POS_ID, rc_pos);
+          Send(RECV_RH_MEM_2_SLIDE_POS_ID, sl_pos);
+          Send(RECV_RH_MEM_2_LEGREST_POS_ID, lr_pos);
+          Send(RECV_RH_MEM_2_FOOTREST_POS_ID, fr_pos);
+        } else if (canId == RECV_STATUS_IDX + LH && deviceType == LH) {
           // 현재 왼쪽 시트 히터 보정값
-          Send(RECV_LH_HEATER_VALUE_ID, sl_pos);
-          heaterCorrection = sl_pos;
+          if (rc_pos == 0 && heaterCorrectionL != rc_pos) {
+            Send(RECV_LH_HEATER_VALUE_ID, sl_pos);
+            heaterCorrectionL = rc_pos;
+          } else if (rc_pos == 3) {
+            if (heaterLevelL != sl_pos) {
+              Send(RECV_LH_HEATER_LEVEL_ID, sl_pos);
+              heaterLevelL = sl_pos;
+            }
+            if (fanLevelL != lr_pos) {
+              Send(RECV_LH_FAN_LEVEL_ID, lr_pos);
+              fanLevelL = lr_pos;
+            }
+            if (massageLevelL != fr_pos) {
+              Send(RECV_LH_MASSAGE_LEVEL_ID, fr_pos);
+              massageLevelL = fr_pos;
+            }
+            if (compingModeL != fr_pos) {
+              Send(RECV_LH_CAMPING_MODE_ID, comping_mode);
+              compingModeL = fr_pos;
+            }
+          }
 //          Serial.print("Heater correction recv data : ");
 //          Serial.println(sl_pos);
-        } else if (canId == RECV_HEATER_IDX + RH && deviceType == RH && heaterCorrection != sl_pos) {
+        } else if (canId == RECV_STATUS_IDX + RH && deviceType == RH) {
           // 현재 오른쪽 시트 히터 보정값
-          Send(RECV_RH_HEATER_VALUE_ID, sl_pos);
-          heaterCorrection = sl_pos;
+          if (rc_pos == 0 && heaterCorrectionR != rc_pos) {
+            Send(RECV_RH_HEATER_VALUE_ID, sl_pos);
+            heaterCorrectionR = rc_pos;
+          } else if (rc_pos == 3) {
+            if (heaterLevelR != sl_pos) {
+              Send(RECV_RH_HEATER_LEVEL_ID, sl_pos);
+              heaterLevelR = sl_pos;
+            }
+            if (fanLevelR != lr_pos) {
+              Send(RECV_RH_FAN_LEVEL_ID, lr_pos);
+              fanLevelR = lr_pos;
+            }
+            if (massageLevelR != fr_pos) {
+              Send(RECV_RH_MASSAGE_LEVEL_ID, fr_pos);
+              massageLevelR = fr_pos;
+            }
+            if (compingModeR != fr_pos) {
+              Send(RECV_RH_CAMPING_MODE_ID, comping_mode);
+              compingModeR = fr_pos;
+            }
+          }
 //          Serial.print("Heater correction recv data : ");
 //          Serial.println(sl_pos);
         }
@@ -331,15 +328,34 @@ void SendCanbus(uint32_t _id, uint8_t _v)
 void ChangeDevice(uint32_t _id)
 {
   deviceType = _id;
+
+  reclinerLPos = 0xFFFF;
+  slideLPos = 0xFFFF;
+  legrestLPos = 0xFFFF;
+  footrestLPos = 0xFFFF;
+  reclinerRPos = 0xFFFF;
+  slideRPos = 0xFFFF;
+  legrestRPos = 0xFFFF;
+  footrestRPos = 0xFFFF;
+  heaterCorrectionL = 0xFFFF;
+  heaterLevelL = 0xFFFF;
+  fanLevelL = 0xFFFF;
+  massageLevelL = 0xFFFF;
+  compingModeL = 0xFF;
+  heaterCorrectionR = 0xFFFF;
+  heaterLevelR = 0xFFFF;
+  fanLevelR = 0xFFFF;
+  massageLevelR = 0xFFFF;
+  compingModeR = 0xFF;
 }
 
 void ChangeDeviceByIndex(uint32_t _index)
 {
   if (_index == 0)
-    deviceType = LH;
+    ChangeDevice(LH);
   else if (_index == 1)
-    deviceType = RH;
+    ChangeDevice(RH);
   else
-    deviceType = HEADER;
+    ChangeDevice(HEADER);
 }
 
