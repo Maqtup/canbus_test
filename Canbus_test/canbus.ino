@@ -335,8 +335,6 @@ void SendCanbus(uint32_t _id, uint8_t _v)
 void ChangeDevice(uint32_t _id)
 {
   deviceType = _id;
-
-  ResetValues();
 }
 
 void ResetValues()
