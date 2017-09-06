@@ -1,5 +1,6 @@
 #include <SoftwareSerial.h> //시리얼 통신 라이브러리 호출
 
+#define RESET_VALUES                        "RVS"
 #define SEAT_SWITCH_L_R_ID                  "SSLR"
 #define SEND_SEAT_K9_SWITCH_ID              "SSK9S"
 #define SEND_SEAT_WORKIN_LUMBAR_SWITCH_ID   "SSWLS"
@@ -156,6 +157,9 @@ void Recv()
       ResetCanbusData();
       SetCanbus1Btye(atoi(data));
       SendCanbus(SEND_REQUEST_ITEM_IDX);
+    } else if (strncmp(receiveStr, RESET_VALUES, strlen(RESET_VALUES)) == 0) {
+      Serial.print("Reset Values.");
+      ResetValues();
     }
     memset(receiveStr, 0, 20);
   }

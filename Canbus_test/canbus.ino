@@ -111,7 +111,6 @@ void RecvCanBus()
         int16_t sl_pos = 0;
         int16_t lr_pos = 0;
         int16_t fr_pos = 0;
-        int16_t comping_mode = 0;
         
         rc_pos = buf[1];
         rc_pos = (rc_pos << 8) + buf[0];
@@ -337,6 +336,11 @@ void ChangeDevice(uint32_t _id)
 {
   deviceType = _id;
 
+  ResetValues();
+}
+
+void ResetValues()
+{
   reclinerLPos = 0xFFFF;
   slideLPos = 0xFFFF;
   legrestLPos = 0xFFFF;
