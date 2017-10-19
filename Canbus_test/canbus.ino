@@ -43,14 +43,11 @@ int8_t fanLevelL = 0xFF;
 int8_t massageLevelL = 0xFF;
 int8_t compingModeL = 0xFF;
 int8_t seatdownL = 0xFF;
-int8_t pressSetL = 0xFF;
 int16_t heaterCorrectionR = 0xFFFF;
 int16_t heaterLevelR = 0xFFFF;
 int8_t fanLevelR = 0xFF;
 int8_t massageLevelR = 0xFF;
 int8_t compingModeR = 0xFF;
-int8_t seatdownR = 0xFF;
-int8_t pressSetR = 0xFF;
 
 // the cs pin of the version after v1.1 is default to D9
 // v0.9b and v1.0 is default D10
@@ -235,7 +232,6 @@ void RecvCanBus()
           uint8_t massage_lv = 0;
           uint8_t comping_mode = 0;
           uint8_t seatdown = 0;
-          uint8_t press_set = 0;
           header = buf[0];
           if (header == 0) {
             heater_lv = buf[2];
@@ -246,7 +242,6 @@ void RecvCanBus()
             massage_lv = buf[3];
             comping_mode = buf[4];
             seatdown = buf[5];
-            press_set = buf[6];
           }
 
           if (canId == RECV_STATUS_IDX + LH && deviceType == LH) {
@@ -275,10 +270,6 @@ void RecvCanBus()
                 Send(RECV_LH_SEATDOWN_ID, seatdown);
                 seatdownL = seatdown;
               }
-              if (pressSetL != press_set) {
-                Send(RECV_LH_PRESS_SET_ID, press_set);
-                pressSetL = press_set;
-              }
             }
 //          Serial.print("Heater correction recv data : ");
 //          Serial.println(heater_lv);
@@ -300,17 +291,13 @@ void RecvCanBus()
                 Send(RECV_RH_MASSAGE_LEVEL_ID, massage_lv);
                 massageLevelR = massage_lv;
               }
-              if (compingModeR != massage_lv) {
+              if (compingModeR != comping_mode) {
                 Send(RECV_RH_CAMPING_MODE_ID, comping_mode);
-                compingModeR = massage_lv;
+                compingModeR = comping_mode;
               }
               if (seatdownR != seatdown) {
                 Send(RECV_RH_SEATDOWN_ID, seatdown);
                 seatdownR = seatdown;
-              }
-              if (pressSetR != press_set) {
-                Send(RECV_RH_PRESS_SET_ID, press_set);
-                pressSetR = press_set;
               }
             }
 //          Serial.print("Heater correction recv data : ");
@@ -377,14 +364,12 @@ void ResetValues()
     massageLevelL = 0xFF;
     compingModeL = 0xFF;
     seatdownL = 0xFF;
-    pressSetL = 0xFF;
     heaterCorrectionR = 0xFFFF;
     heaterLevelR = 0xFFFF;
     fanLevelR = 0xFF;
     massageLevelR = 0xFF;
     compingModeR = 0xFF;
     seatdownR = 0xFF;
-    pressSetR = 0xFF;
 }
 
 void ChangeDeviceByIndex(uint32_t _index)

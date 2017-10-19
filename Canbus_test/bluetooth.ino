@@ -46,13 +46,11 @@
 #define RECV_LH_MASSAGE_LEVEL_ID            "RLMLV"
 #define RECV_LH_CAMPING_MODE_ID             "RLCMD"
 #define RECV_LH_SEATDOWN_ID                 "RLSTD"
-#define RECV_LH_PRESS_SET_ID                "RLPRS"
 #define RECV_RH_HEATER_LEVEL_ID             "RRHLV"
 #define RECV_RH_FAN_LEVEL_ID                "RRFLV"
 #define RECV_RH_MASSAGE_LEVEL_ID            "RRMLV"
 #define RECV_RH_CAMPING_MODE_ID             "RRCMD"
 #define RECV_RH_SEATDOWN_ID                 "RRSTD"
-#define RECV_RH_PRESS_SET_ID                "RRPRS"
 
 int blueTx=3;   //Tx (보내는핀 설정)
 int blueRx=4;   //Rx (받는핀 설정)
