@@ -39,14 +39,18 @@ int16_t footrestRPos = 0xFFFF;
 
 int16_t heaterCorrectionL = 0xFFFF;
 int16_t heaterLevelL = 0xFFFF;
-int16_t fanLevelL = 0xFFFF;
-int16_t massageLevelL = 0xFFFF;
+int8_t fanLevelL = 0xFF;
+int8_t massageLevelL = 0xFF;
 int8_t compingModeL = 0xFF;
+int8_t seatdownL = 0xFF;
+int8_t pressSetL = 0xFF;
 int16_t heaterCorrectionR = 0xFFFF;
 int16_t heaterLevelR = 0xFFFF;
-int16_t fanLevelR = 0xFFFF;
-int16_t massageLevelR = 0xFFFF;
+int8_t fanLevelR = 0xFF;
+int8_t massageLevelR = 0xFF;
 int8_t compingModeR = 0xFF;
+int8_t seatdownR = 0xFF;
+int8_t pressSetR = 0xFF;
 
 // the cs pin of the version after v1.1 is default to D9
 // v0.9b and v1.0 is default D10
@@ -225,11 +229,13 @@ void RecvCanBus()
         }
      } else {
         if (canId == RECV_STATUS_IDX + LH || canId == RECV_STATUS_IDX + RH) {
-          int16_t header = 0;
-          int16_t heater_lv = 0;
-          int16_t fan_lv = 0;
-          int16_t massage_lv = 0;
-          int16_t comping_mode = 0;
+          int8_t header = 0;
+          uint16_t heater_lv = 0;
+          uint8_t fan_lv = 0;
+          uint8_t massage_lv = 0;
+          uint8_t comping_mode = 0;
+          uint8_t seatdown = 0;
+          uint8_t press_set = 0;
           header = buf[0];
           if (header == 0) {
             heater_lv = buf[2];
@@ -239,6 +245,8 @@ void RecvCanBus()
             fan_lv = buf[2];
             massage_lv = buf[3];
             comping_mode = buf[4];
+            seatdown = buf[5];
+            press_set = buf[6];
           }
 
           if (canId == RECV_STATUS_IDX + LH && deviceType == LH) {
@@ -259,9 +267,17 @@ void RecvCanBus()
                 Send(RECV_LH_MASSAGE_LEVEL_ID, massage_lv);
                 massageLevelL = massage_lv;
               }
-              if (compingModeL != massage_lv) {
+              if (compingModeL != comping_mode) {
                 Send(RECV_LH_CAMPING_MODE_ID, comping_mode);
-                compingModeL = massage_lv;
+                compingModeL = comping_mode;
+              }
+              if (seatdownL != seatdown) {
+                Send(RECV_LH_SEATDOWN_ID, seatdown);
+                seatdownL = seatdown;
+              }
+              if (pressSetL != press_set) {
+                Send(RECV_LH_PRESS_SET_ID, press_set);
+                pressSetL = press_set;
               }
             }
 //          Serial.print("Heater correction recv data : ");
@@ -287,6 +303,14 @@ void RecvCanBus()
               if (compingModeR != massage_lv) {
                 Send(RECV_RH_CAMPING_MODE_ID, comping_mode);
                 compingModeR = massage_lv;
+              }
+              if (seatdownR != seatdown) {
+                Send(RECV_RH_SEATDOWN_ID, seatdown);
+                seatdownR = seatdown;
+              }
+              if (pressSetR != press_set) {
+                Send(RECV_RH_PRESS_SET_ID, press_set);
+                pressSetR = press_set;
               }
             }
 //          Serial.print("Heater correction recv data : ");
@@ -339,24 +363,28 @@ void ChangeDevice(uint32_t _id)
 
 void ResetValues()
 {
-  reclinerLPos = 0xFFFF;
-  slideLPos = 0xFFFF;
-  legrestLPos = 0xFFFF;
-  footrestLPos = 0xFFFF;
-  reclinerRPos = 0xFFFF;
-  slideRPos = 0xFFFF;
-  legrestRPos = 0xFFFF;
-  footrestRPos = 0xFFFF;
-  heaterCorrectionL = 0xFFFF;
-  heaterLevelL = 0xFFFF;
-  fanLevelL = 0xFFFF;
-  massageLevelL = 0xFFFF;
-  compingModeL = 0xFF;
-  heaterCorrectionR = 0xFFFF;
-  heaterLevelR = 0xFFFF;
-  fanLevelR = 0xFFFF;
-  massageLevelR = 0xFFFF;
-  compingModeR = 0xFF;
+    reclinerLPos = 0xFFFF;
+    slideLPos = 0xFFFF;
+    legrestLPos = 0xFFFF;
+    footrestLPos = 0xFFFF;
+    reclinerRPos = 0xFFFF;
+    slideRPos = 0xFFFF;
+    legrestRPos = 0xFFFF;
+    footrestRPos = 0xFFFF;
+    heaterCorrectionL = 0xFFFF;
+    heaterLevelL = 0xFFFF;
+    fanLevelL = 0xFF;
+    massageLevelL = 0xFF;
+    compingModeL = 0xFF;
+    seatdownL = 0xFF;
+    pressSetL = 0xFF;
+    heaterCorrectionR = 0xFFFF;
+    heaterLevelR = 0xFFFF;
+    fanLevelR = 0xFF;
+    massageLevelR = 0xFF;
+    compingModeR = 0xFF;
+    seatdownR = 0xFF;
+    pressSetR = 0xFF;
 }
 
 void ChangeDeviceByIndex(uint32_t _index)
@@ -367,5 +395,12 @@ void ChangeDeviceByIndex(uint32_t _index)
     ChangeDevice(RH);
   else
     ChangeDevice(HEADER);
+}
+
+uint16_t GetSlidePos()
+{
+    if (deviceType == LH)
+        return slideLPos;
+    return slideRPos;
 }
 

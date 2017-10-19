@@ -5,14 +5,7 @@
 #define SEND_SEAT_K9_SWITCH_ID              "SSK9S"
 #define SEND_SEAT_WORKIN_LUMBAR_SWITCH_ID   "SSWLS"
 
-#define SEND_LH_SEAT_SLIDE_POS_ID           "SLSSP"
-#define SEND_LH_SEAT_RECLINER_POS_ID        "SLSRP"
-#define SEND_LH_SEAT_LEGREST_POS_ID         "SLSLP"
-#define SEND_LH_SEAT_FOOTREST_POS_ID        "SLSFP"
-#define SEND_RH_SEAT_SLIDE_POS_ID           "SRSSP"
-#define SEND_RH_SEAT_RECLINER_POS_ID        "SRSRP"
-#define SEND_RH_SEAT_LEGREST_POS_ID         "SRSLP"
-#define SEND_RH_SEAT_FOOTREST_POS_ID        "SRSFP"
+#define SEND_SEAT_MOVE_POS_ID               "SSMP"
 
 #define SEND_MEM_1_SEAT_POS_ID              "SM1SP"
 #define SEND_MEM_2_SEAT_POS_ID              "SM2SP"
@@ -52,10 +45,14 @@
 #define RECV_LH_FAN_LEVEL_ID                "RLFLV"
 #define RECV_LH_MASSAGE_LEVEL_ID            "RLMLV"
 #define RECV_LH_CAMPING_MODE_ID             "RLCMD"
+#define RECV_LH_SEATDOWN_ID                 "RLSTD"
+#define RECV_LH_PRESS_SET_ID                "RLPRS"
 #define RECV_RH_HEATER_LEVEL_ID             "RRHLV"
 #define RECV_RH_FAN_LEVEL_ID                "RRFLV"
 #define RECV_RH_MASSAGE_LEVEL_ID            "RRMLV"
 #define RECV_RH_CAMPING_MODE_ID             "RRCMD"
+#define RECV_RH_SEATDOWN_ID                 "RRSTD"
+#define RECV_RH_PRESS_SET_ID                "RRPRS"
 
 int blueTx=3;   //Tx (보내는핀 설정)
 int blueRx=4;   //Rx (받는핀 설정)
@@ -158,8 +155,26 @@ void Recv()
       SetCanbus1Btye(atoi(data));
       SendCanbus(SEND_REQUEST_ITEM_IDX);
     } else if (strncmp(receiveStr, RESET_VALUES, strlen(RESET_VALUES)) == 0) {
-      Serial.print("Reset Values.");
+      Serial.println("Reset Values.");
       ResetValues();
+    } else if (strncmp(receiveStr, SEND_SEAT_MOVE_POS_ID, strlen(SEND_SEAT_MOVE_POS_ID)) == 0) {
+        char* data = &receiveStr[strlen(SEND_SEAT_MOVE_POS_ID)];
+        Serial.print("Seat Move : ");
+        Serial.println(data);
+        ResetCanbusData();
+        uint8_t count=0;
+        char *ptr;
+        ptr = strtok(data, ",");
+        while (ptr != NULL) {
+            ++count;
+            if (count == 2) {
+                SetCanbus2Btye(GetSlidePos());
+            } else {
+                SetCanbus2Btye(atoi(ptr));
+            }
+            ptr = strtok(NULL, ",");
+        }
+        SendCanbus(SEND_POSITION_IDX);
     }
     memset(receiveStr, 0, 20);
   }
@@ -179,4 +194,5 @@ void Send(char* _id, int _data)
   mySerial.write(send_data);
   Serial.print("Send Bluetooth data : ");
   Serial.print(send_data);
+  Serial.println("");
 }
